@@ -81,11 +81,15 @@
                 if (!logs || logs.length === 0) {
                     tableBody.innerHTML = '<tr><td colspan="5" class="p-10 text-center text-slate-400 italic">The database is currently empty.</td></tr>';
                 } else {
-                    logs.forEach(item => {
+                    logs.forEach((item, index) => {
                         const row = document.createElement('tr');
                         row.className = "hover:bg-white/5 transition-colors";
+                        
+                        // Sequential serial numbering
+                        const serialNumber = index + 1; 
+
                         row.innerHTML = `
-                            <td class="px-6 py-4 text-sm font-mono text-teal-400">#${item.id}</td>
+                            <td class="px-6 py-4 text-sm font-mono text-teal-400">#${serialNumber}</td>
                             <td class="px-6 py-4 text-sm font-bold text-white">${item.name}</td>
                             <td class="px-6 py-4 text-sm text-teal-100 font-medium">${item.event}</td>
                             <td class="px-6 py-4 text-sm text-slate-200 max-w-md">${item.message}</td>
