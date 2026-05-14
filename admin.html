@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | Sysslan Events</title>
@@ -127,5 +128,21 @@
         // Auto-refresh every 10 seconds to save on Render's free tier bandwidth
         setInterval(loadAdminData, 10000);
     </script>
+
+    <footer class="text-center py-8">
+    <p class="signature-text text-teal-300/80 tracking-wide">
+        created with love & passion by <span class="text-teal-300">Kuldeep Chowdhury</span>
+    </p>
+</footer>
+
+<style>
+    .signature-text {
+        font-family: 'Dancing Script', cursive;
+        font-size: 1.5rem;
+        /* Subtle glow effect to match your glassmorphism theme */
+        text-shadow: 0 0 10px rgba(20, 184, 166, 0.3);
+    }
+</style>
+
 </body>
 </html>
