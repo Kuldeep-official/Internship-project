@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Sysslan Events</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-image: linear-gradient(rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.7)), url('iMG.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+        }
+        .glass-nav {
+            background: rgba(30, 41, 59, 0.4); 
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="text-white font-sans min-h-screen">
+
+    <nav class="glass-nav sticky top-0 z-50 p-6 shadow-2xl">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-black tracking-tight text-teal-300 drop-shadow-md">ADMIN CONTROL PANEL</h1>
+            <div class="flex items-center gap-4">
+                <span id="syncStatus" class="text-xs text-slate-300 italic">Synced: Just now</span>
+                <a href="index.html" class="text-sm bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg transition backdrop-blur-md">Public Site</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-12 px-6">
+        <div class="flex justify-between items-end mb-8">
+            <div>
+                <h2 class="text-3xl font-bold text-teal-300">Feedback Management</h2>
+                <p class="text-slate-300 mt-2">Live database stream from <span class="text-teal-300 font-semibold">Cloud Host</span></p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="clearDatabase()" class="bg-rose-600 hover:bg-rose-500 px-6 py-2 rounded-full font-bold shadow-lg shadow-rose-900/40 transition">
+                    🗑️ Clear All
+                </button>
+                <button onclick="loadAdminData()" class="bg-teal-600 hover:bg-teal-500 px-6 py-2 rounded-full font-bold shadow-lg shadow-teal-900/40 transition">
+                    Refresh Data
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-slate-900/40 backdrop-blur-md rounded-2xl shadow-2xl overflow-hidden border border-white/10">
+            <table class="min-w-full divide-y divide-white/10">
+                <thead class="bg-slate-900/60 text-slate-400">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest">ID</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest">User</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest">Event</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest">Message</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest">Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody id="adminTableBody" class="divide-y divide-white/5">
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:5000/api/feedback';
+
+        async function loadAdminData() {
+            const tableBody = document.getElementById('adminTableBody');
+            const syncStatus = document.getElementById('syncStatus');
+            try {
+                const response = await fetch(API_URL);
+                const result = await response.json();
+                const logs = result.data || result;
+
+                tableBody.innerHTML = '';
+                if (!logs || logs.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="5" class="p-10 text-center text-slate-400 italic">The database is currently empty.</td></tr>';
+                } else {
+                    logs.forEach(item => {
+                        const row = document.createElement('tr');
+                        row.className = "hover:bg-white/5 transition-colors";
+                        row.innerHTML = `
+                            <td class="px-6 py-4 text-sm font-mono text-teal-400">#${item.id}</td>
+                            <td class="px-6 py-4 text-sm font-bold text-white">${item.name}</td>
+                            <td class="px-6 py-4 text-sm text-teal-100 font-medium">${item.event}</td>
+                            <td class="px-6 py-4 text-sm text-slate-200 max-w-md">${item.message}</td>
+                            <td class="px-6 py-4 text-sm text-slate-400">${item.date}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                }
+                syncStatus.innerText = "Synced: " + new Date().toLocaleTimeString();
+            } catch (err) {
+                tableBody.innerHTML = '<tr><td colspan="5" class="p-10 text-center text-red-400">Connection Error.</td></tr>';
+            }
+        }
+
+        async function clearDatabase() {
+            if (!confirm("Are you sure? This will permanently delete all feedback!")) return;
+            try {
+                const response = await fetch(API_URL + '/clear', { method: 'DELETE' });
+                if (response.ok) { loadAdminData(); }
+            } catch (err) { console.error("Clear error:", err); }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadAdminData);
+        setInterval(loadAdminData, 5000);
+    </script>
+</body>
+</html>
