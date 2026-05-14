@@ -75,21 +75,23 @@
             try {
                 const response = await fetch(API_URL);
                 const result = await response.json();
+                
+                // Handle different possible API response structures
                 const logs = result.data || result;
 
                 tableBody.innerHTML = '';
                 if (!logs || logs.length === 0) {
                     tableBody.innerHTML = '<tr><td colspan="5" class="p-10 text-center text-slate-400 italic">The database is currently empty.</td></tr>';
                 } else {
+                    // Using index + 1 ensures the list always starts at #1 visually
                     logs.forEach((item, index) => {
                         const row = document.createElement('tr');
                         row.className = "hover:bg-white/5 transition-colors";
                         
-                        // Sequential serial numbering
-                        const serialNumber = index + 1; 
+                        const visualID = index + 1; 
 
                         row.innerHTML = `
-                            <td class="px-6 py-4 text-sm font-mono text-teal-400">#${serialNumber}</td>
+                            <td class="px-6 py-4 text-sm font-mono text-teal-400">#${visualID}</td>
                             <td class="px-6 py-4 text-sm font-bold text-white">${item.name}</td>
                             <td class="px-6 py-4 text-sm text-teal-100 font-medium">${item.event}</td>
                             <td class="px-6 py-4 text-sm text-slate-200 max-w-md">${item.message}</td>
@@ -100,20 +102,30 @@
                 }
                 syncStatus.innerText = "Synced: " + new Date().toLocaleTimeString();
             } catch (err) {
-                tableBody.innerHTML = '<tr><td colspan="5" class="p-10 text-center text-red-400">Connection Error.</td></tr>';
+                console.error("Fetch error:", err);
+                tableBody.innerHTML = '<tr><td colspan="5" class="p-10 text-center text-red-400">Connection Error. Is the backend awake?</td></tr>';
             }
         }
 
         async function clearDatabase() {
-            if (!confirm("Are you sure? This will permanently delete all feedback!")) return;
+            if (!confirm("Are you sure? This will permanently delete all feedback from the cloud!")) return;
             try {
                 const response = await fetch(API_URL + '/clear', { method: 'DELETE' });
-                if (response.ok) { loadAdminData(); }
-            } catch (err) { console.error("Clear error:", err); }
+                if (response.ok) { 
+                    loadAdminData(); 
+                } else {
+                    alert("Failed to clear database. Check console for errors.");
+                }
+            } catch (err) { 
+                console.error("Clear error:", err); 
+            }
         }
 
+        // Initial load
         document.addEventListener('DOMContentLoaded', loadAdminData);
-        setInterval(loadAdminData, 5000);
+        
+        // Auto-refresh every 10 seconds to save on Render's free tier bandwidth
+        setInterval(loadAdminData, 10000);
     </script>
 </body>
 </html>
