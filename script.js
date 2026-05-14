@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const feedbackForm = document.getElementById('feedbackForm');
     const feedbackContainer = document.getElementById('feedbackContainer');
-    const API_URL = 'http://127.0.0.1:5000/api/feedback';
+    const API_URL = 'https://sysslan-feedbacks.onrender.com/api/feedback';
 
     // 1. Fetch and Display Cards
     async function fetchFeedback() {
