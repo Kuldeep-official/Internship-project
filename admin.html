@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | Sysslan Events</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -18,6 +19,11 @@
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .signature-text {
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.5rem;
+            text-shadow: 0 0 10px rgba(20, 184, 166, 0.3);
         }
     </style>
 </head>
@@ -34,14 +40,15 @@
     </nav>
 
     <main class="max-w-7xl mx-auto py-12 px-6">
+        <!-- Flex items reversed to swap button layouts layout positioning perfectly -->
         <div class="flex justify-between items-end mb-8">
             <div>
                 <h2 class="text-3xl font-bold text-teal-300">Feedback Management</h2>
                 <p class="text-slate-300 mt-2">Live database stream from <span class="text-teal-300 font-semibold">Cloud Host</span></p>
             </div>
-            <div class="flex gap-3">
-                <button onclick="clearDatabase()" class="bg-rose-600 hover:bg-rose-500 px-6 py-2 rounded-full font-bold shadow-lg shadow-rose-900/40 transition">
-                    🗑️ Clear All
+            <div class="flex gap-3 flex-row-reverse w-full sm:w-auto justify-between sm:justify-start">
+                <button onclick="clearSelectedFeedback()" class="bg-rose-600 hover:bg-rose-500 px-6 py-2 rounded-full font-bold shadow-lg shadow-rose-900/40 transition">
+                    🗑️ Clear
                 </button>
                 <button onclick="loadAdminData()" class="bg-teal-600 hover:bg-teal-500 px-6 py-2 rounded-full font-bold shadow-lg shadow-teal-900/40 transition">
                     Refresh Data
@@ -53,96 +60,119 @@
             <table class="min-w-full divide-y divide-white/10">
                 <thead class="bg-slate-900/60 text-slate-400">
                     <tr>
-                        <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest">ID</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest w-12">
+                            <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" class="rounded bg-slate-800 border-white/20 text-teal-500 focus:ring-teal-500/20 w-4 h-4 cursor-pointer">
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest w-20">ID</th>
                         <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest">User</th>
                         <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest">Event</th>
                         <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest">Message</th>
                         <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest">Timestamp</th>
                     </tr>
                 </thead>
-                <tbody id="adminTableBody" class="divide-y divide-white/5">
-                </tbody>
+                <tbody id="adminTableBody" class="divide-y divide-white/5"></tbody>
             </table>
         </div>
     </main>
 
+    <footer class="text-center py-8">
+        <p class="signature-text text-teal-300/80 tracking-wide">
+            Created With Love & Passion by <span class="text-teal-300">Kuldeep Chowdhury</span>
+        </p>
+    </footer>
+
     <script>
         const API_URL = 'https://sysslan-feedbacks.onrender.com/api/feedback';
+
+        function toggleSelectAll(master) {
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            checkboxes.forEach(cb => cb.checked = master.checked);
+        }
 
         async function loadAdminData() {
             const tableBody = document.getElementById('adminTableBody');
             const syncStatus = document.getElementById('syncStatus');
+            const masterCheckbox = document.getElementById('selectAllCheckbox');
+            
+            if (masterCheckbox) masterCheckbox.checked = false;
+
             try {
                 const response = await fetch(API_URL);
                 const result = await response.json();
-                
-                // Handle different possible API response structures
                 const logs = result.data || result;
 
                 tableBody.innerHTML = '';
+                
                 if (!logs || logs.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="5" class="p-10 text-center text-slate-400 italic">The database is currently empty.</td></tr>';
-                } else {
-                    // Using index + 1 ensures the list always starts at #1 visually
-                    logs.forEach((item, index) => {
-                        const row = document.createElement('tr');
-                        row.className = "hover:bg-white/5 transition-colors";
-                        
-                        const visualID = index + 1; 
-
-                        row.innerHTML = `
-                            <td class="px-6 py-4 text-sm font-mono text-teal-400">#${visualID}</td>
-                            <td class="px-6 py-4 text-sm font-bold text-white">${item.name}</td>
-                            <td class="px-6 py-4 text-sm text-teal-100 font-medium">${item.event}</td>
-                            <td class="px-6 py-4 text-sm text-slate-200 max-w-md">${item.message}</td>
-                            <td class="px-6 py-4 text-sm text-slate-400">${item.date}</td>
-                        `;
-                        tableBody.appendChild(row);
-                    });
+                    tableBody.innerHTML = '<tr><td colspan="6" class="p-10 text-center text-slate-400 italic">The database is currently empty.</td></tr>';
+                    return;
                 }
+                
+                logs.forEach((item, index) => {
+                    const row = document.createElement('tr');
+                    row.className = "hover:bg-white/5 transition-colors";
+                    
+                    const visualID = index + 1; 
+
+                    row.innerHTML = `
+                        <td class="px-6 py-4 text-center">
+                            <input type="checkbox" value="${item.id}" class="row-checkbox rounded bg-slate-800 border-white/20 text-teal-500 focus:ring-teal-500/20 w-4 h-4 cursor-pointer">
+                        </td>
+                        <td class="px-6 py-4 text-sm font-mono text-teal-400">#${visualID}</td>
+                        <td class="px-6 py-4 text-sm font-bold text-white">${item.name}</td>
+                        <td class="px-6 py-4 text-sm text-teal-100 font-medium">${item.event}</td>
+                        <td class="px-6 py-4 text-sm text-slate-200 max-w-md">${item.message}</td>
+                        <td class="px-6 py-4 text-sm text-slate-400">${item.date}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
                 syncStatus.innerText = "Synced: " + new Date().toLocaleTimeString();
             } catch (err) {
                 console.error("Fetch error:", err);
-                tableBody.innerHTML = '<tr><td colspan="5" class="p-10 text-center text-red-400">Connection Error. Is the backend awake?</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="6" class="p-10 text-center text-red-400">Connection Error. Is the backend awake?</td></tr>';
             }
         }
 
-        async function clearDatabase() {
-            if (!confirm("Are you sure? This will permanently delete all feedback from the cloud!")) return;
+        async function clearSelectedFeedback() {
+            const checkboxes = document.querySelectorAll('.row-checkbox:checked');
+            const masterCheckbox = document.getElementById('selectAllCheckbox');
+            
+            if (checkboxes.length === 0) {
+                alert("Please select at least one entry to delete.");
+                return;
+            }
+
+            const targetIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+            const totalCount = document.querySelectorAll('.row-checkbox').length;
+            
+            // Determine text if it's an selective sweep or total wipe purge target
+            const targetPayload = (checkboxes.length === totalCount && masterCheckbox.checked) ? 'ALL' : targetIds;
+            const msg = targetPayload === 'ALL' 
+                ? "Are you sure? This will permanently delete ALL entries from the cloud!" 
+                : `Are you sure you want to delete the ${checkboxes.length} selected entries?`;
+
+            if (!confirm(msg)) return;
+            
             try {
-                const response = await fetch(API_URL + '/clear', { method: 'DELETE' });
+                const response = await fetch(API_URL + '/delete', { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ids: targetPayload })
+                });
+
                 if (response.ok) { 
                     loadAdminData(); 
                 } else {
-                    alert("Failed to clear database. Check console for errors.");
+                    alert("Failed to delete selected entries.");
                 }
             } catch (err) { 
-                console.error("Clear error:", err); 
+                console.error("Clear selection error:", err); 
             }
         }
 
-        // Initial load
         document.addEventListener('DOMContentLoaded', loadAdminData);
-        
-        // Auto-refresh every 10 seconds to save on Render's free tier bandwidth
         setInterval(loadAdminData, 10000);
     </script>
-
-    <footer class="text-center py-8">
-    <p class="signature-text text-teal-300/80 tracking-wide">
-        Created With Love & Passion by <span class="text-teal-300">Kuldeep Chowdhury</span>
-    </p>
-</footer>
-
-
-    <style>
-    .signature-text {
-        font-family: 'Dancing Script', cursive;
-        font-size: 1.5rem;
-        /* Subtle glow effect to match your glassmorphism theme */
-        text-shadow: 0 0 10px rgba(20, 184, 166, 0.3);
-    }
-</style>
-
 </body>
 </html>

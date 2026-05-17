@@ -2,12 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sysslan Events | Feedback System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Custom animation for the background shapes */
         @keyframes float {
             0% { transform: translateY(0px); }
             50% { transform: translateY(-20px); }
@@ -15,14 +13,12 @@
         }
         .animate-float { animation: float 6s ease-in-out infinite; }
         
-        /* The secret sauce: Backdrop blur for Glassmorphism */
         .glass-card {
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
-
         .glass-nav {
             background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(10px);
@@ -30,18 +26,6 @@
         }
     </style>
 </head>
-
-<div id="successPopup" class="fixed inset-0 flex items-center justify-center z-[100] hidden">
-    <div class="glass-card p-10 rounded-3xl shadow-2xl text-center border border-white/40 max-w-sm transform scale-95 transition-transform duration-300">
-        <div class="w-20 h-20 bg-teal-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-teal-500/40">
-            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-        </div>
-        <h3 class="text-2xl font-black text-gray-900 mb-2">Sent!</h3>
-        <p class="text-gray-600 mb-6">Your feedback is now live on the dashboard.</p>
-        <button onclick="closePopup()" class="bg-gray-900 text-white px-8 py-2 rounded-full font-bold hover:bg-gray-800 transition">Awesome</button>
-    </div>
-</div>
-
 <body class="min-h-screen bg-gradient-to-br from-orange-400 via-rose-400 to-amber-300 font-sans text-gray-800">
 
     <div class="fixed top-20 left-10 w-64 h-64 bg-white/20 rounded-full blur-3xl animate-float"></div>
@@ -50,8 +34,9 @@
     <nav class="glass-nav p-4 sticky top-0 z-50">
         <div class="max-w-6xl mx-auto flex justify-between items-center">
             <h1 class="text-2xl font-black text-orange-600 tracking-tighter">SYSSLAN <span class="text-gray-900">EVENTS</span></h1>
-            <div class="space-x-8 font-semibold text-gray-700">
+            <div class="space-x-8 font-semibold text-gray-700 flex items-center">
                 <a href="#" class="hover:text-orange-600 transition">Home</a>
+                <a href="#" id="openEventsBtn" class="hover:text-orange-600 transition">Events</a>
                 <a href="#feedback-section" class="hover:text-orange-600 transition">Feedback</a>
             </div>
         </div>
@@ -67,15 +52,14 @@
             <form id="feedbackForm" class="space-y-6">
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2 ml-1">Full Name</label>
-                    <input type="text" id="userName" placeholder="e.g. Kuldeep C." required 
-                     autocomplete="off" 
-                     class="w-full p-4 bg-white/50 border border-white/50 rounded-2xl focus:ring-4 focus:ring-orange-500/20 focus:outline-none transition placeholder-gray-400">
+                    <input type="text" id="userName" placeholder="e.g. Kuldeep C." required autocomplete="off" 
+                           class="w-full p-4 bg-white/50 border border-white/50 rounded-2xl focus:ring-4 focus:ring-orange-500/20 focus:outline-none transition placeholder-gray-400">
                 </div>
 
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2 ml-1">Event Name</label>
                     <select id="eventName" required 
-                        class="w-full p-4 bg-white/50 border border-white/50 rounded-2xl focus:ring-4 focus:ring-orange-500/20 focus:outline-none transition">
+                            class="w-full p-4 bg-white/50 border border-white/50 rounded-2xl focus:ring-4 focus:ring-orange-500/20 focus:outline-none transition">
                         <option value="">Select an Event</option>
                         <option value="Tech Summit 2026">Tech Summit 2026</option>
                         <option value="AI Workshop">AI Workshop</option>
@@ -84,15 +68,13 @@
                         <option value="Tech Stack ">Tech Stack</option>
                         <option value="Binary Brews">Binary Brews</option>
                         <option value="Blockchain Boldness">Blockchain Boldness</option>
-
-
                     </select>
                 </div>
 
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2 ml-1">Feedback Message</label>
                     <textarea id="userMessage" placeholder="What did you think?" required 
-                        class="w-full p-4 bg-white/50 border border-white/50 rounded-2xl h-40 focus:ring-4 focus:ring-orange-500/20 focus:outline-none transition placeholder-gray-400"></textarea>
+                              class="w-full p-4 bg-white/50 border border-white/50 rounded-2xl h-40 focus:ring-4 focus:ring-orange-500/20 focus:outline-none transition placeholder-gray-400"></textarea>
                 </div>
 
                 <button type="submit" class="w-full bg-gradient-to-r from-orange-600 to-rose-600 text-white font-black py-4 rounded-2xl shadow-lg hover:shadow-orange-500/30 hover:scale-[1.02] active:scale-95 transition-all duration-200 uppercase tracking-widest">
@@ -102,8 +84,48 @@
         </div>
     </section>
 
+    <!-- Public Events Overlay Glassmorphism Window -->
+    <div id="eventsModal" class="fixed inset-0 bg-black/20 backdrop-blur-md flex items-center justify-center z-[110] hidden">
+        <div class="glass-card p-10 rounded-3xl shadow-2xl border border-white/40 max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-3xl font-black text-gray-900 tracking-tight">Listed Events</h3>
+                <button onclick="closeEventsModal()" class="text-gray-700 hover:text-orange-600 text-2xl font-bold transition">&times;</button>
+            </div>
+            <div class="space-y-4">
+                <div class="bg-white/40 p-4 rounded-xl border border-white/60">
+                    <h4 class="font-bold text-orange-700 text-lg">Tech Summit 2026</h4>
+                    <p class="text-sm text-gray-600">The premier annual gathering discussing systemic hardware and scaling methodologies.</p>
+                </div>
+                <div class="bg-white/40 p-4 rounded-xl border border-white/60">
+                    <h4 class="font-bold text-orange-700 text-lg">AI Workshop</h4>
+                    <p class="text-sm text-gray-600">Hands-on integrations mapping neural parameters and generative deployments architecture models.</p>
+                </div>
+                <div class="bg-white/40 p-4 rounded-xl border border-white/60">
+                    <h4 class="font-bold text-orange-700 text-lg">Networking Night</h4>
+                    <p class="text-sm text-gray-600">Connect with industry leaders, founders, and engineers operating across elite development layers.</p>
+                </div>
+                <div class="bg-white/40 p-4 rounded-xl border border-white/60">
+                    <h4 class="font-bold text-orange-700 text-lg">Database Bashing</h4>
+                    <p class="text-sm text-gray-600">Stress testing backend configurations, indexes tuning, and structural performance validation operations.</p>
+                </div>
+            </div>
+            <button onclick="closeEventsModal()" class="mt-6 w-full bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-gray-800 transition">Close Window</button>
+        </div>
+    </div>
+
+    <div id="successPopup" class="fixed inset-0 flex items-center justify-center z-[100] hidden">
+        <div class="glass-card p-10 rounded-3xl shadow-2xl text-center border border-white/40 max-w-sm transform scale-95 transition-transform duration-300">
+            <div class="w-20 h-20 bg-teal-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-teal-500/40">
+                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            <h3 class="text-2xl font-black text-gray-900 mb-2">Sent!</h3>
+            <p class="text-gray-600 mb-6">Your feedback is now live on the dashboard.</p>
+            <button onclick="closePopup()" class="bg-gray-900 text-white px-8 py-2 rounded-full font-bold hover:bg-gray-800 transition">Awesome</button>
+        </div>
+    </div>
 
     <script src="script.js"></script>
-
 </body>
 </html>
