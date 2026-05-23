@@ -12,7 +12,7 @@ const db = new sqlite3.Database('./database.db', (err) => {
     if (err) {
         console.error('Database connection error:', err.message);
     } else {
-        console.log('✅ SQLite Database connected.');
+        console.log('SQLite Database connected.');
     }
 });
 
@@ -46,7 +46,7 @@ app.post('/api/feedback', (req, res) => {
     });
 });
 
-// Targeted Delete Route - Accepts an array of item IDs or 'ALL'
+// Targeted Delete Route 
 app.post('/api/feedback/delete', (req, res) => {
     const { ids } = req.body; // Expects { ids: [1, 2, 3] } or { ids: 'ALL' }
 
@@ -64,8 +64,8 @@ app.post('/api/feedback/delete', (req, res) => {
             return res.status(400).json({ error: "Invalid target formatting array" });
         }
         
-        // Constructs placeholder binding question marks dynamically safely
-        const placeholders = ids.map(() => '?').join(',');
+        
+        const placeholders = ids.map(() => '?').join(',');   // Constructs placeholder binding question marks dynamically safely
         const query = `DELETE FROM feedback WHERE id IN (${placeholders})`;
 
         db.run(query, ids, function(err) {
@@ -76,5 +76,5 @@ app.post('/api/feedback/delete', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(` Server running on port ${PORT}`);
 });

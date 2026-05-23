@@ -40,7 +40,7 @@
     </nav>
 
     <main class="max-w-7xl mx-auto py-12 px-6">
-        <!-- Flex items reversed to swap button layouts layout positioning perfectly -->
+        <!-- Action buttons (Delete / Refresh) aligned to the right on desktop -->
         <div class="flex justify-between items-end mb-8">
             <div>
                 <h2 class="text-3xl font-bold text-teal-300">Feedback Management</h2>
@@ -146,7 +146,8 @@
             const targetIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
             const totalCount = document.querySelectorAll('.row-checkbox').length;
             
-            // Determine text if it's an selective sweep or total wipe purge target
+           // Check if the target is specific items only (selective sweep)
+          // or everything completely removed (total wipe/purge) 
             const targetPayload = (checkboxes.length === totalCount && masterCheckbox.checked) ? 'ALL' : targetIds;
             const msg = targetPayload === 'ALL' 
                 ? "Are you sure? This will permanently delete ALL entries from the cloud!" 
