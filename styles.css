@@ -1,4 +1,4 @@
-/* Custom scrollbar for a cleaner look */
+/*  scrollbar  */
 ::-webkit-scrollbar {
     width: 8px;
 }
@@ -10,7 +10,7 @@
     border-radius: 10px;
 }
 
-/* Glass card hover glow */
+/*  card  */
 .glass-card:hover {
     background: rgba(255, 255, 255, 0.85);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
