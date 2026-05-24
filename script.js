@@ -5,6 +5,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const eventsModal = document.getElementById('eventsModal');
     const openEventsBtn = document.getElementById('openEventsBtn');
     
+    // Welcome screen handling hooks
+    const welcomeOverlay = document.getElementById('welcomeOverlay');
+    const getStartedBtn = document.getElementById('getStartedBtn');
+
+    if (getStartedBtn && welcomeOverlay) {
+        getStartedBtn.addEventListener('click', () => {
+            welcomeOverlay.classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                welcomeOverlay.style.display = 'none';
+            }, 500);
+        });
+    }
+    
     const API_URL = 'https://sysslan-feedbacks.onrender.com/api/feedback';
 
     function renderFeedbackCards(logs) {

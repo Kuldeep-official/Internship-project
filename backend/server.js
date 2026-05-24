@@ -16,17 +16,59 @@ const db = new sqlite3.Database('./database.db', (err) => {
     }
 });
 
-db.run(`
-    CREATE TABLE IF NOT EXISTS feedback (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        event TEXT,
-        message TEXT,
-        date TEXT
-    )
-`);
+// Created tables
+db.serialize(() => {
+    db.run(`
+        CREATE TABLE IF NOT EXISTS feedback (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            event TEXT,
+            message TEXT,
+            date TEXT
+        )
+    `);
+
+    
+    db.run(`
+        CREATE TABLE IF NOT EXISTS settings (
+            key TEXT PRIMARY KEY,
+            value TEXT
+        )
+    `, () => {
+        
+        db.run(`INSERT OR IGNORE INTO settings (key, value) VALUES ('admin_passkey', 'Sysslan@Admin')`);
+    });
+});
 
 // --- API Routes ---
+
+// Admin validation
+app.post('/api/admin/verify', (req, res) => {
+    const { passkey } = req.body;
+    db.get("SELECT value FROM settings WHERE key = 'admin_passkey'", [], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (row && row.value === passkey) {
+            return res.json({ success: true });
+        }
+        return res.status(401).json({ success: false, error: "Incorrect Passkey Access Denied." });
+    });
+});
+
+// Update password
+app.post('/api/admin/change-password', (req, res) => {
+    const { oldPassword, newPassword } = req.body;
+    db.get("SELECT value FROM settings WHERE key = 'admin_passkey'", [], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!row || row.value !== oldPassword) {
+            return res.status(400).json({ success: false, error: "Old password confirmation failed." });
+        }
+        
+        db.run("UPDATE settings SET value = ? WHERE key = 'admin_passkey'", [newPassword], function(updateErr) {
+            if (updateErr) return res.status(500).json({ error: updateErr.message });
+            res.json({ success: true });
+        });
+    });
+});
 
 app.get('/api/feedback', (req, res) => {
     const query = "SELECT * FROM feedback ORDER BY id DESC";
@@ -65,7 +107,7 @@ app.post('/api/feedback/delete', (req, res) => {
         }
         
         
-        const placeholders = ids.map(() => '?').join(',');   // Constructs placeholder binding question marks dynamically safely
+        const placeholders = ids.map(() => '?').join(',');   
         const query = `DELETE FROM feedback WHERE id IN (${placeholders})`;
 
         db.run(query, ids, function(err) {
